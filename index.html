@@ -223,10 +223,10 @@ body.nav-hero-page:not(.nav-scrolled) .nav-hamburger span{background:#fff}
 
 /* ── HERO ── */
 .home-hero-wrap{padding:0}
-#hero-section{position:relative;height:100vh;height:calc(var(--vh,1vh)*100);min-height:640px;overflow:hidden;transform:translateZ(0)}
+#hero-section{position:relative;height:100vh;height:calc(var(--vh,1vh)*100);height:100dvh;min-height:640px;overflow:hidden;transform:translateZ(0)}
 @media(max-width:900px){
 .home-hero-wrap{padding:0}
-#hero-section{height:100vh;height:calc(var(--vh,1vh)*100);min-height:560px}
+#hero-section{height:100vh;height:calc(var(--vh,1vh)*100);height:100dvh;min-height:560px}
 }
 #hero-section img{position:absolute;inset:0;height:100%;object-fit:cover;object-position:center;animation:heroKenBurns 26s ease-out forwards;will-change:transform}
 @keyframes heroKenBurns{from{transform:scale(1)}to{transform:scale(1.08)}}
@@ -1071,8 +1071,11 @@ body.intro-done .hero-stats{opacity:1}
 
 /* ── RESPONSIVE ── */
 @media(max-width:900px){
-  /* NAV - edge-to-edge on mobile (was a floating inset pill) */
-  nav{top:0;left:0;right:0;max-width:100%;border-radius:0;padding:0 1.2rem;box-shadow:0 4px 20px rgba(20,18,16,0.1)}
+  /* NAV - near edge-to-edge on mobile (was a floating pill with a big 20px inset).
+     Round 265: pulled the side inset in further (8px read as too much of a gap still) -
+     now it's basically touching the edges, with just enough inset left that the
+     rounded corners still show as a curve against the page behind it. */
+  nav{top:0;left:3px;right:3px;max-width:calc(100% - 6px);border-radius:var(--radius-md);padding:0 1.2rem;box-shadow:0 4px 20px rgba(20,18,16,0.1)}
   .nav-links{display:none}
   .nav-hamburger{display:flex}
   .nav-hamburger span{width:27px}
