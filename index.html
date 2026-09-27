@@ -2,6 +2,18 @@
 <html lang="en">
 <head>
 <script>history.scrollRestoration='manual';</script>
+<script>
+// Real mobile viewport height (mobile browsers resize the visible viewport as their
+// address/toolbar bars show or hide, which makes plain 100vh either cut the hero short or
+// overshoot it). Set once on load/orientation change - deliberately NOT on every scroll-driven
+// resize, since animating the hero's height while the toolbar auto-hides would be more jarring
+// than a static height that's fixed to how tall the page was when it first opened.
+(function(){
+  function setVh(){ document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01)+'px'); }
+  setVh();
+  window.addEventListener('orientationchange', function(){ setTimeout(setVh, 400); }, {passive:true});
+})();
+</script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Chitova's Guesthouse - Private 4-Bedroom Home · Victoria Falls, Zimbabwe</title>
@@ -211,10 +223,10 @@ body.nav-hero-page:not(.nav-scrolled) .nav-hamburger span{background:#fff}
 
 /* ── HERO ── */
 .home-hero-wrap{padding:0}
-#hero-section{position:relative;height:100vh;min-height:640px;overflow:hidden;transform:translateZ(0)}
+#hero-section{position:relative;height:100vh;height:calc(var(--vh,1vh)*100);min-height:640px;overflow:hidden;transform:translateZ(0)}
 @media(max-width:900px){
 .home-hero-wrap{padding:0}
-#hero-section{height:100vh;min-height:560px}
+#hero-section{height:100vh;height:calc(var(--vh,1vh)*100);min-height:560px}
 }
 #hero-section img{position:absolute;inset:0;height:100%;object-fit:cover;object-position:center;animation:heroKenBurns 26s ease-out forwards;will-change:transform}
 @keyframes heroKenBurns{from{transform:scale(1)}to{transform:scale(1.08)}}
@@ -964,7 +976,7 @@ body.nav-scrolled .gallery-subnav{top:calc(var(--nav-bar-h) + 5px)}
 .contact-form-sub{font-size:.91rem;color:rgba(26,22,18,0.75);margin-bottom:2.5rem;line-height:1.75}
 .form-group{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.3rem}
 .form-label{font-family:var(--barlow);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted-lt)}
-.form-input{background:var(--cream2);border:1px solid var(--border-lt);border-radius:var(--radius-sm);padding:.88rem 1.1rem;font-family:var(--barlow);font-size:.94rem;font-weight:300;color:var(--text-lt);width:100%;transition:border-color .2s;outline:none}
+.form-input{background:var(--cream2);border:1px solid var(--border-lt);border-radius:var(--radius-sm);padding:.88rem 1.1rem;font-family:var(--barlow);font-size:.94rem;font-weight:300;color:var(--text-lt);width:100%;min-width:0;transition:border-color .2s;outline:none}
 input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;cursor:pointer}
 .form-input::placeholder{color:var(--muted-lt)}
 .form-input:focus{border-color:var(--ochre)}
@@ -974,6 +986,7 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;curs
 .faq-quicklink:hover{color:var(--gold) !important}
 textarea.form-input{resize:vertical;min-height:130px}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-row>.form-group{min-width:0}
 .btn-submit{width:100%;font-family:var(--barlow);font-size:.8rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--dark);background:var(--ochre);border:none;border-radius:8px;padding:1.1rem;cursor:pointer;transition:background .2s;margin-top:.5rem}
 .btn-submit:hover{background:var(--gold)}
 
@@ -1058,8 +1071,8 @@ body.intro-done .hero-stats{opacity:1}
 
 /* ── RESPONSIVE ── */
 @media(max-width:900px){
-  /* NAV */
-  nav{padding:0 1.5rem}
+  /* NAV - edge-to-edge on mobile (was a floating inset pill) */
+  nav{top:0;left:0;right:0;max-width:100%;border-radius:0;padding:0 1.2rem;box-shadow:0 4px 20px rgba(20,18,16,0.1)}
   .nav-links{display:none}
   .nav-hamburger{display:flex}
   .nav-hamburger span{width:27px}
@@ -2351,6 +2364,36 @@ function goReview(pageIdx) {
 }
 
 window.addEventListener('resize', function() { buildDots(); positionTrack(); }, {passive:true});
+
+// ── REVIEW CAROUSEL TOUCH/SWIPE ──
+// Client wants finger-swipe through review cards on mobile, not just the arrow buttons.
+(function() {
+  var outer = document.querySelector('.reviews-track-outer');
+  if (!outer) return;
+  var startX = 0, startY = 0, dx = 0, dy = 0, dragging = false;
+  outer.addEventListener('touchstart', function(e) {
+    var t = e.touches[0];
+    startX = t.clientX; startY = t.clientY; dx = 0; dy = 0; dragging = true;
+  }, {passive:true});
+  outer.addEventListener('touchmove', function(e) {
+    if (!dragging) return;
+    var t = e.touches[0];
+    dx = t.clientX - startX;
+    dy = t.clientY - startY;
+    // Only hijack the gesture (block page scroll) once it's clearly a horizontal swipe.
+    if (Math.abs(dx) > Math.abs(dy) && e.cancelable) e.preventDefault();
+  }, {passive:false});
+  outer.addEventListener('touchend', function() {
+    if (!dragging) return;
+    dragging = false;
+    var threshold = 40;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      if (dx < -threshold) reviewNav(1);
+      else if (dx > threshold) reviewNav(-1);
+    }
+    dx = 0; dy = 0;
+  }, {passive:true});
+})();
 
 // ── SUB-NAV JUMP (Gallery, Location, Todo) ──
 // Explicit scroll instead of native #anchor jump. Native fragment navigation is unreliable here
