@@ -226,7 +226,12 @@ body.nav-hero-page:not(.nav-scrolled) .nav-hamburger span{background:#fff}
 #hero-section{position:relative;height:100vh;height:calc(var(--vh,1vh)*100);height:100dvh;min-height:640px;overflow:hidden;transform:translateZ(0)}
 @media(max-width:900px){
 .home-hero-wrap{padding:0}
-#hero-section{height:100vh;height:calc(var(--vh,1vh)*100);height:100dvh;min-height:560px}
+/* Round 266: dvh alone still left a sliver of gap below the hero on a real phone, so
+   layering in a small fixed overshoot on top of it - hero runs a little past one
+   screen's worth of height rather than risking falling a little short of it. Barely
+   noticeable as "one extra soft scroll," but it means there's never a gap of bare
+   page peeking in underneath the hero on load. */
+#hero-section{height:100vh;height:calc(var(--vh,1vh)*100);height:calc(100dvh + 60px);min-height:560px}
 }
 #hero-section img{position:absolute;inset:0;height:100%;object-fit:cover;object-position:center;animation:heroKenBurns 26s ease-out forwards;will-change:transform}
 @keyframes heroKenBurns{from{transform:scale(1)}to{transform:scale(1.08)}}
@@ -391,8 +396,19 @@ body.intro-done .loc-hero-eyebrow span{transform:none}
 .review-quote-top{display:flex;align-items:center;justify-content:space-between;gap:.8rem;margin-bottom:1.3rem}
 .review-quote-stars{display:flex;gap:.2rem}
 .review-quote-stars svg{width:14px;height:14px;fill:var(--brass)}
-.review-quote-platform-logo{height:18px;width:auto;display:block;opacity:1;filter:brightness(0) invert(55%) sepia(83%) saturate(85%) hue-rotate(-7deg) brightness(66%) contrast(91%)}
-.review-quote-platform-logo.logo-google{height:26px}
+/* Round 267: this filter was landing as flat grey instead of the warm brass it was going for -
+   retuned the invert/sepia/saturate curve so the platform logos actually read as brand-gold
+   against the review cards instead of looking like a broken/unstyled image.
+   Round 267b: split per-platform. logo-google.png turned out to already be the real
+   full-colour Google wordmark (the old shared filter was flattening it to brass along with
+   the other two) - just drop the filter for it. logo-airbnb.png is a plain white cutout with
+   no colour data of its own, but Airbnb's actual mark is a single flat coral, so it recolors
+   the same way the brass tint did, just aimed at their real #FF5A5F instead. Booking.com stays
+   on the brass tint from the pass above. */
+.review-quote-platform-logo{height:18px;width:auto;display:block;opacity:1}
+.review-quote-platform-logo.logo-booking{filter:brightness(0) invert(65%) sepia(45%) saturate(600%) hue-rotate(-5deg) brightness(95%) contrast(92%)}
+.review-quote-platform-logo.logo-google{height:26px;filter:none}
+.review-quote-platform-logo.logo-airbnb{filter:brightness(0) invert(48%) sepia(79%) saturate(2476%) hue-rotate(325deg) brightness(100%) contrast(101%)}
 .review-quote-text{font-family:var(--playfair);font-size:1.05rem;font-weight:400;font-style:normal;line-height:1.55;color:var(--text-lt);margin-bottom:1.4rem;flex:1}
 .review-quote-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem;padding-top:1rem;border-top:1px solid var(--border-lt)}
 .review-quote-attr{font-family:var(--barlow);font-size:.7rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-lt)}
@@ -772,9 +788,19 @@ body.intro-done .loc-hero-eyebrow span{transform:none}
 .amenity-tag-lt .dot{width:5px;height:5px;border-radius:50%;background:var(--muted-lt);flex-shrink:0}
 /* review pull-quote under kitchen */
 .amenity-pull-quote{margin-top:2rem;padding-top:1.8rem;border-top:1px solid var(--border-lt)}
-.pull-quote-elevated{position:relative;margin-top:2.2rem;padding:1.9rem 2.1rem;background:var(--cream2);border-top:none;border:1px solid var(--border-lt);border-radius:var(--radius-lg);overflow:visible}
+/* Round 267: this was background:var(--cream2) on pages that are themselves var(--cream) -
+   the two are 7 units apart in every RGB channel, so the "card" only ever showed up as a
+   near-invisible hairline border - fixed by giving it real background contrast.
+   Round 267c: teal + a left accent stripe didn't land. Round 267d: solid ochre read as too
+   loud/saturated next to black and teal - all three attempts were reaching for a strong,
+   fully-saturated color when the actual ask was just enough contrast to read as a card.
+   Landed on --border-lt, the same soft warm taupe already used sitewide for borders/dividers -
+   it's a full tint step off --cream (not 7 units like the old bug) so it reads clearly as its
+   own surface, but it's a neutral, not a "color," so it stays quiet next to everything else. */
+.pull-quote-elevated{position:relative;margin-top:2.2rem;padding:1.9rem 2.1rem;background:var(--border-lt);border:none;border-radius:var(--radius-lg);overflow:visible;box-shadow:0 12px 30px rgba(20,18,16,0.1)}
 .amenity-pull-quote p{font-family:var(--barlow);font-size:1.05rem;font-style:normal;color:rgba(26,22,18,0.9);line-height:1.7}
 .amenity-pull-quote cite{font-family:var(--playfair);font-size:.95rem;font-weight:400;letter-spacing:.01em;text-transform:none;color:var(--muted-lt);display:block;margin-top:.6rem;font-style:normal}
+.amenity-pull-quote.pull-quote-elevated cite{color:var(--ochre)}
 /* lookbook 2-col image grid - labels as overlay */
 .amenity-lookbook{display:grid;grid-template-columns:1.25fr 1fr;gap:1.5rem;margin-bottom:3rem}
 .amenity-lookbook-item{position:relative;overflow:hidden;border-radius:var(--radius-lg);transition:box-shadow .3s,transform .3s}
@@ -980,12 +1006,26 @@ body.nav-scrolled .gallery-subnav{top:calc(var(--nav-bar-h) + 5px)}
 input[type="date"].form-input::-webkit-calendar-picker-indicator{opacity:.6;cursor:pointer}
 .form-input::placeholder{color:var(--muted-lt)}
 .form-input:focus{border-color:var(--ochre)}
+/* Round 267: iOS Safari doesn't paint a "mm/dd/yyyy" hint into an empty date input the way
+   desktop browsers do - it just shows a blank box, which reads as broken. This overlays our
+   own styled hint text that hides itself once a date is picked, via .has-value on the wrapper.
+   Scoped to WebKit touch (iOS) only via @supports below - desktop Chrome/Firefox/Edge already
+   draw their own native hint, so showing ours everywhere would just double up the text. */
+.date-field{position:relative}
+.date-field-hint{display:none;position:absolute;left:1.1rem;top:50%;transform:translateY(-50%);font-family:var(--barlow);font-size:.94rem;font-weight:300;color:var(--muted-lt);pointer-events:none;transition:opacity .15s}
+.date-field.has-value .date-field-hint{opacity:0}
+@supports (-webkit-touch-callout:none){
+  .date-field-hint{display:block}
+}
 #faq-search{transition:border-color .2s}
 #faq-search:focus{border-color:var(--ochre) !important}
 .faq-quicklink{transition:color .2s}
 .faq-quicklink:hover{color:var(--gold) !important}
 textarea.form-input{resize:vertical;min-height:130px}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+/* Round 267: 1fr alone still lets a native date-input's intrinsic min-width push the track
+   wider than its share, even with min-width:0 on the child - minmax(0,1fr) caps the track
+   itself so the check-in/check-out inputs can't force the row past the form's edge. */
+.form-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1rem}
 .form-row>.form-group{min-width:0}
 .btn-submit{width:100%;font-family:var(--barlow);font-size:.8rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--dark);background:var(--ochre);border:none;border-radius:8px;padding:1.1rem;cursor:pointer;transition:background .2s;margin-top:.5rem}
 .btn-submit:hover{background:var(--gold)}
@@ -1346,8 +1386,8 @@ body.intro-done .hero-stats{opacity:1}
       <div class="about-split-text">
         <h2 class="about-headline">A full home, entirely yours</h2>
         <p class="body-lt">Chitova's is a four-bedroom home in the Aerodrome Suburb of Victoria Falls - ten minutes from the Falls, five minutes walk from town, and entirely yours for your stay.</p>
-        <p class="body-lt" style="margin-top:.9rem">The house sleeps up to eight guests: Bedroom 1 has two double beds, Bedroom 2 has two queen beds, and Bedrooms 3 and 4 each have two single beds. Three bathrooms, a fully equipped kitchen, a private pool with a rock waterfall feature, and daily breakfast prepared by our team.</p>
-        <p class="body-lt" style="margin-top:.9rem">The house is entirely yours - no other guests, ever. A staff member stays on site around the clock purely to keep things running: the generator, the water pumps, and everything else that makes your stay uninterrupted.</p>
+        <p class="body-lt" style="margin-top:.9rem">Sleeps up to eight guests across four bedrooms and three bathrooms, with a fully equipped kitchen, a private pool with a rock waterfall feature, and daily breakfast prepared by our team.</p>
+        <p class="body-lt" style="margin-top:.9rem">And it's entirely yours - no other guests, ever. A staff member stays on site around the clock to keep the generator, water pumps, and everything else running quietly in the background.</p>
         <div class="amenity-pull-quote pull-quote-elevated">
           <p>"Perfect location, stunning property. Norman and his team went above and beyond. The breakfast every morning was a highlight - fresh and generous."</p>
           <cite>Lena - Germany · Booking.com 9.6/10</cite>
@@ -1998,11 +2038,17 @@ body.intro-done .hero-stats{opacity:1}
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Check-In</label>
-              <input class="form-input" type="date" name="checkin"/>
+              <div class="date-field">
+                <input class="form-input" type="date" name="checkin" oninput="this.closest('.date-field').classList.toggle('has-value', !!this.value)"/>
+                <span class="date-field-hint">mm/dd/yyyy</span>
+              </div>
             </div>
             <div class="form-group">
               <label class="form-label">Check-Out</label>
-              <input class="form-input" type="date" name="checkout"/>
+              <div class="date-field">
+                <input class="form-input" type="date" name="checkout" oninput="this.closest('.date-field').classList.toggle('has-value', !!this.value)"/>
+                <span class="date-field-hint">mm/dd/yyyy</span>
+              </div>
             </div>
           </div>
           <div class="form-group">
